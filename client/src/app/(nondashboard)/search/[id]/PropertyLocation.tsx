@@ -15,7 +15,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
 });
 
-const PropertyLocation = ({ propertyId }: { propertyId: string }) => {
+const PropertyLocation = ({ propertyId }: { propertyId: number }) => {
   const {
     data: property,
     isLoading,

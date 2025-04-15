@@ -1,6 +1,6 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import React, { useEffect, useState, useRef } from "react";
+import { MapContainer, TileLayer, Marker, Popup, ZoomControl } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useAppSelector } from "@/state/redux";
@@ -20,12 +20,13 @@ const Map = () => {
     isError,
   } = useGetPropertiesQuery(filters);
   
-  const [map, setMap] = useState(null);
+  // Properly type the map with L.Map
+  const [map, setMap] = useState<L.Map | null>(null);
+  const mapRef = useRef<L.Map | null>(null);
   
   // Set default icon for all markers
   useEffect(() => {
     // This prevents issues with Leaflet's default icons in Next.js
-    delete L.Icon.Default.prototype._getIconUrl;
     L.Icon.Default.mergeOptions({
       iconUrl: markerIcon.src,
       iconRetinaUrl: markerIcon2x.src,
@@ -60,10 +61,13 @@ const Map = () => {
   return (
     <div className="h-full w-full rounded-xl">
       <MapContainer
-        center={center}
+        center={center as [number, number]}
         zoom={9}
         style={{ height: "100%", width: "100%", borderRadius: "0.75rem" }}
-        whenCreated={setMap}
+        ref={(mapInstance) => {
+          mapRef.current = mapInstance;
+          setMap(mapInstance);
+        }}
         // Lower z-index to ensure it doesn't overlap with filter dropdowns
         zoomControl={false} // Move zoom control to a different position
       >
@@ -71,11 +75,8 @@ const Map = () => {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        {/* Add zoom control at bottom right to avoid overlapping with filters */}
-        <div className="leaflet-bottom leaflet-right" style={{ zIndex: 10 }}>
-          {map && L.control.zoom({ position: 'bottomright' }).addTo(map)}
-        </div>
-        {properties.map((property) => (
+        <ZoomControl position="bottomright" />
+        {properties.map((property: Property) => (
           <PropertyMarker key={property.id} property={property} />
         ))}
       </MapContainer>
@@ -83,9 +84,13 @@ const Map = () => {
   );
 };
 
-const PropertyMarker = ({ property }) => {
+interface PropertyMarkerProps {
+  property: Property;
+}
+
+const PropertyMarker: React.FC<PropertyMarkerProps> = ({ property }) => {
   // Make sure coordinates are in the correct format for Leaflet [lat, lng]
-  const position = [
+  const position: [number, number] = [
     property.location.coordinates.latitude,
     property.location.coordinates.longitude,
   ];
