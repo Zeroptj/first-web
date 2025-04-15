@@ -66,24 +66,24 @@ const FiltersFull = () => {
   const handleLocationSearch = async () => {
     try {
       const response = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
           localFilters.location
-        )}.json?access_token=${
-          process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN
-        }&fuzzyMatch=true`
+        )}`
       );
       const data = await response.json();
-      if (data.features && data.features.length > 0) {
-        const [lng, lat] = data.features[0].center;
+      if (data && data.length > 0) {
+        const lat = parseFloat(data[0].lat);
+        const lon = parseFloat(data[0].lon);
         setLocalFilters((prev) => ({
           ...prev,
-          coordinates: [lng, lat],
+          coordinates: [lon, lat], // Leaflet ใช้ [lat, lon] แต่ที่คุณเก็บเป็น [lng, lat] ตามเดิมก็ได้
         }));
       }
     } catch (err) {
-      console.error("Error search location:", err);
+      console.error("Error searching location:", err);
     }
   };
+  
 
   if (!isFiltersFullOpen) return null;
 

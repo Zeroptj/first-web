@@ -20,11 +20,9 @@ const HeroSection = () => {
       if (!trimmedQuery) return;
 
       const response = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
           trimmedQuery
-        )}.json?access_token=${
-          process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN
-        }&fuzzyMatch=true`
+        )}`
       );
       const data = await response.json();
       if (data.features && data.features.length > 0) {
@@ -71,20 +69,17 @@ const HeroSection = () => {
             Explore our wide range of rental properties tailored to fit your
             lifestyle and needs!
           </p>
-
           <div className="flex justify-center">
             <Input
               type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value="search query" 
+              onChange={() => {}}
               placeholder="Search by city, neighborhood or address"
-              className="w-full max-w-lg rounded-none rounded-l-xl border-none bg-white h-12"
-            />
+              className="w-full max-w-lg rounded-none rounded-l-xl border-none bg-white h-12"/>
             <Button
-              onClick={handleLocationSearch}
-              className="bg-secondary-500 text-white rounded-none rounded-r-xl border-none hover:bg-secondary-600 h-12"
-            >
-              Search
+            onClick={() => {}}
+            className="bg-secondary-500 text-white rounded-none rounded-r-xl border-none hover:bg-secondary-600 h-12">
+            Search
             </Button>
           </div>
         </div>

@@ -1,50 +1,31 @@
-import { useGetPropertyQuery } from "@/state/api";
+"use client";
+import React from "react";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import L from "leaflet";
 import { Compass, MapPin } from "lucide-react";
-import mapboxgl from "mapbox-gl";
-import "mapbox-gl/dist/mapbox-gl.css";
-import React, { useEffect, useRef } from "react";
+import { useGetPropertyQuery } from "@/state/api";
+import "leaflet/dist/leaflet.css";
 
-mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN as string;
+// ปรับ Marker icon ให้ถูกต้อง (Leaflet มีปัญหา default icon ใน Next.js)
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl:
+    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+});
 
-const PropertyLocation = ({ propertyId }: PropertyDetailsProps) => {
+const PropertyLocation = ({ propertyId }: { propertyId: string }) => {
   const {
     data: property,
-    isError,
     isLoading,
+    isError,
   } = useGetPropertyQuery(propertyId);
-  const mapContainerRef = useRef(null);
-
-  useEffect(() => {
-    if (isLoading || isError || !property) return;
-
-    const map = new mapboxgl.Map({
-      container: mapContainerRef.current!,
-      style: "mapbox://styles/majesticglue/cm6u301pq008b01sl7yk1cnvb",
-      center: [
-        property.location.coordinates.longitude,
-        property.location.coordinates.latitude,
-      ],
-      zoom: 14,
-    });
-
-    const marker = new mapboxgl.Marker()
-      .setLngLat([
-        property.location.coordinates.longitude,
-        property.location.coordinates.latitude,
-      ])
-      .addTo(map);
-
-    const markerElement = marker.getElement();
-    const path = markerElement.querySelector("path[fill='#3FB1CE']");
-    if (path) path.setAttribute("fill", "#000000");
-
-    return () => map.remove();
-  }, [property, isError, isLoading]);
 
   if (isLoading) return <>Loading...</>;
-  if (isError || !property) {
-    return <>Property not Found</>;
-  }
+  if (isError || !property) return <>Property not Found</>;
+
+  const { latitude, longitude } = property.location.coordinates;
 
   return (
     <div className="py-16">
@@ -71,10 +52,26 @@ const PropertyLocation = ({ propertyId }: PropertyDetailsProps) => {
           Get Directions
         </a>
       </div>
-      <div
-        className="relative mt-4 h-[300px] rounded-lg overflow-hidden"
-        ref={mapContainerRef}
-      />
+
+      <div className="relative mt-4 h-[300px] rounded-lg overflow-hidden">
+        <MapContainer
+          center={[latitude, longitude]}
+          zoom={14}
+          scrollWheelZoom={false}
+          style={{ height: "100%", width: "100%" }}
+        >
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+          <Marker position={[latitude, longitude]}>
+            <Popup>
+              {property.name}<br />
+              {property.location?.address}
+            </Popup>
+          </Marker>
+        </MapContainer>
+      </div>
     </div>
   );
 };

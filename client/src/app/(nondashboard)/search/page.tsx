@@ -45,10 +45,16 @@ const SearchPage = () => {
         height: `calc(100vh - ${NAVBAR_HEIGHT}px)`,
       }}
     >
-      <FiltersBar />
+      {/* FiltersBar with high z-index to ensure dropdowns appear above map */}
+      <div className="relative z-50 mb-3">
+        <FiltersBar />
+      </div>
+      
+      {/* Main content area */}
       <div className="flex justify-between flex-1 overflow-hidden gap-3 mb-5">
+        {/* FiltersFull sidebar */}
         <div
-          className={`h-full overflow-auto transition-all duration-300 ease-in-out ${
+          className={`h-full overflow-auto transition-all duration-300 ease-in-out z-40 ${
             isFiltersFullOpen
               ? "w-3/12 opacity-100 visible"
               : "w-0 opacity-0 invisible"
@@ -56,8 +62,14 @@ const SearchPage = () => {
         >
           <FiltersFull />
         </div>
-        <Map />
-        <div className="basis-4/12 overflow-y-auto">
+        
+        {/* Map with lower z-index to stay under dropdowns */}
+        <div className="basis-5/12 grow relative rounded-xl z-10">
+          <Map />
+        </div>
+        
+        {/* Listings */}
+        <div className="basis-4/12 overflow-y-auto z-20">
           <Listings />
         </div>
       </div>
