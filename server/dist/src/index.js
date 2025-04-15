@@ -37,6 +37,6 @@ app.use("/tenants", (0, authMiddleware_1.authMiddleware)(["tenant"]), tenantRout
 app.use("/managers", (0, authMiddleware_1.authMiddleware)(["manager"]), managerRoutes_1.default);
 /* SERVER */
 const port = Number(process.env.PORT) || 3002;
-app.listen(port, () => {
+app.listen(port, "0.0.0.0", () => {
     console.log(`Server running on port ${port}`);
 });
